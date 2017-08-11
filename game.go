@@ -28,6 +28,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"math/rand"
 	"time"
 )
 
@@ -63,21 +64,6 @@ func Advance(board map[Point]bool) map[Point]bool {
 	return board
 }
 
-var (
-	blink = map[Point]bool{
-		Point{-1, 0}: true,
-		Point{0, 0}:  true,
-		Point{1, 0}:  true,
-	}
-	glider = map[Point]bool{
-		Point{-1, 0}: true,
-		Point{0, 0}:  true,
-		Point{1, 0}:  true,
-		Point{1, 1}:  true,
-		Point{0, 2}:  true,
-	}
-)
-
 func writeGameWindow(board map[Point]bool, rect image.Rectangle) {
 	for y := rect.Min.Y; y <= rect.Max.Y; y++ {
 		for x := rect.Min.X; x <= rect.Max.X; x++ {
@@ -93,8 +79,36 @@ func writeGameWindow(board map[Point]bool, rect image.Rectangle) {
 
 func main() {
 	period := flag.Duration("period", time.Second/10, "time between animation steps")
+	boardName := flag.String("board", "glider", "board name")
 	flag.Parse()
-	board := glider
+
+	var board map[Point]bool
+	switch *boardName {
+	case "glider":
+		board = map[Point]bool{
+			Point{-1, 0}: true,
+			Point{0, 0}:  true,
+			Point{1, 0}:  true,
+			Point{1, 1}:  true,
+			Point{0, 2}:  true,
+		}
+	case "blink":
+		board = map[Point]bool{
+			Point{-1, 0}: true,
+			Point{0, 0}:  true,
+			Point{1, 0}:  true,
+		}
+	case "random":
+		board = make(map[Point]bool)
+		for i := -20; i <= 20; i++ {
+			for j := -20; j <= 20; j++ {
+				if rand.Int()%2 == 0 {
+					board[Point{i, j}] = true
+				}
+			}
+		}
+	}
+
 	timer := time.NewTicker(*period)
 	for _ = range timer.C {
 		fmt.Println("\033c") // Clear screen character
